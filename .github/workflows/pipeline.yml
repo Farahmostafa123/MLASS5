@@ -21,15 +21,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
-          pip install dvc
-
-      - name: Pull data with DVC
-        run: dvc pull || echo "Skipping DVC"
+          pip install mlflow scikit-learn
 
       - name: Train model
-        env:
-          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
         run: python train.py
 
       - name: Upload model info
@@ -61,10 +55,7 @@ jobs:
           name: model-info
 
       - name: Check accuracy threshold
-        env:
-          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
         run: python check_threshold.py
 
       - name: Mock Docker build
-        run: |
-          echo "Building Docker image for Run ID: $(cat model_info.txt)"
+        run: echo "Building Docker image for Run ID: $(cat model_info.txt)"
