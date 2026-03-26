@@ -21,10 +21,20 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Pull data with DVC
-        env:
-          GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
-        run: dvc pull
+      - name: Prepare data (generate Iris dataset locally)
+        run: |
+          mkdir -p data
+          python - <<'EOF'
+          from sklearn.datasets import load_iris
+          import csv
+          X, y = load_iris(return_X_y=True)
+          with open("data/iris.csv", "w", newline="") as f:
+              writer = csv.writer(f)
+              writer.writerow(["s1","s2","s3","s4","label"])
+              for xi, yi in zip(X, y):
+                  writer.writerow(list(xi) + [yi])
+          print(f"Data ready: {len(y)} rows")
+          EOF
 
       - name: Train model
         env:
@@ -67,5 +77,3 @@ jobs:
         run: |
           RUN_ID=$(cat model_info.txt)
           echo "Building Docker image for Run ID: $RUN_ID"
-
-          
